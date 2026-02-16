@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Vayne</title>
+        <link rel="stylesheet" href="stylesheet.css">
+        <script src="interact.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <h1>Welcome</h1>
+        <main class="widgets">
+            <section class="widget time-widget">
+                <h2>Local Time</h2>
+                <div class="Time" id="time"></div>
+            </section>
+
+            <section class="widget weather-widget">
+                <h2>Weather</h2>
+                <div class="Weather" id="weather">
+                    <p class="loading">Loading weather…</p>
+                </div>
+            </section>
+
+            <section class="widget doppler-widget">
+                <h2>Doppler Map</h2>
+                <div class="Doppler" id="doppler">
+                    <p class="loading">Loading map…</p>
+                </div>
+            </section>
+        </main>
+
+        <script src="weatherscript.js"></script>
+</body>
+</html>
