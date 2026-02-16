@@ -62,12 +62,38 @@ document.addEventListener('DOMContentLoaded', () => {
 			widget.__pos = { x: 0, y: 0 };
 		}
 
+		// apply saved size (width/height) if present
+		const sizeKey = `widget-size-${id}`;
+		try {
+			const rawSize = localStorage.getItem(sizeKey);
+			if (rawSize) {
+				const s = JSON.parse(rawSize);
+				if (s.w) widget.style.width = s.w + 'px';
+				if (s.h) widget.style.height = s.h + 'px';
+				widget.__size = { w: s.w, h: s.h };
+			} else {
+				widget.__size = { w: widget.offsetWidth, h: widget.offsetHeight };
+			}
+		} catch (e) {
+			widget.__size = { w: widget.offsetWidth, h: widget.offsetHeight };
+		}
+
+		// add a resize handle
+		const handle = document.createElement('div');
+		handle.className = 'resize-handle';
+		widget.appendChild(handle);
+
 		let dragging = false;
 		let startX = 0, startY = 0;
 		let startOffset = { x: 0, y: 0 };
 
+		let resizing = false;
+		let rStartX = 0, rStartY = 0;
+		let rStartW = 0, rStartH = 0;
+
 		function isInteractiveTarget(el) {
 			const tag = el.tagName && el.tagName.toLowerCase();
+			if (el && el.classList && el.classList.contains('resize-handle')) return true;
 			return ['input', 'select', 'button', 'a', 'textarea', 'iframe', 'label'].includes(tag);
 		}
 
@@ -83,6 +109,16 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 
 		window.addEventListener('pointermove', (ev) => {
+			if (resizing) {
+				const dx = ev.clientX - rStartX;
+				const dy = ev.clientY - rStartY;
+				const newW = Math.max(140, Math.round(rStartW + dx));
+				const newH = Math.max(60, Math.round(rStartH + dy));
+				widget.style.width = newW + 'px';
+				widget.style.height = newH + 'px';
+				widget.__size = { w: newW, h: newH };
+				return;
+			}
 			if (!dragging) return;
 			const dx = ev.clientX - startX;
 			const dy = ev.clientY - startY;
@@ -93,6 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 
 		window.addEventListener('pointerup', (ev) => {
+			if (resizing) {
+				resizing = false;
+				widget.classList.remove('resizing');
+				try { handle.releasePointerCapture && handle.releasePointerCapture(ev.pointerId); } catch (e) {}
+				localStorage.setItem(sizeKey, JSON.stringify(widget.__size));
+				return;
+			}
 			if (!dragging) return;
 			dragging = false;
 			widget.classList.remove('dragging');
@@ -100,5 +143,18 @@ document.addEventListener('DOMContentLoaded', () => {
 			// save
 			localStorage.setItem(key, JSON.stringify(widget.__pos));
 		});
+
+		handle.addEventListener('pointerdown', (ev) => {
+			ev.stopPropagation();
+			handle.setPointerCapture(ev.pointerId);
+			resizing = true;
+			widget.classList.add('resizing');
+			rStartX = ev.clientX;
+			rStartY = ev.clientY;
+			rStartW = widget.__size.w || widget.offsetWidth;
+			rStartH = widget.__size.h || widget.offsetHeight;
+			ev.preventDefault();
+		});
+
 	});
 });

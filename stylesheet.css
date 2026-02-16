@@ -45,6 +45,7 @@ h1 {
     cursor: grab;
     transition: transform 0.12s ease;
     transform-origin: 0 0;
+    position: relative; /* for resize handle positioning */
 }
 
 .widget h2 {
@@ -78,6 +79,31 @@ h1 {
 .error { color: #ffb3b3; }
 
 .widget.dragging { cursor: grabbing; transition: none; }
+
+/* Resize handle */
+.resize-handle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    right: 8px;
+    bottom: 8px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 3px;
+    cursor: se-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+}
+.resize-handle::after {
+    content: '\2198';
+    font-size: 10px;
+    color: rgba(0,0,0,0.7);
+}
+.widget.resizing { cursor: nwse-resize; transition: none; }
+
+/* Min/max visual hints */
+.widget { min-width: 180px; min-height: 80px; }
 
 /* Text outline for better contrast on busy backgrounds */
 .text-outline,
