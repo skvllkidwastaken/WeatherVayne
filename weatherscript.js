@@ -4,6 +4,14 @@ async function getWeather(lat, lon) {
     if (!res.ok) throw new Error('Weather API error');
     return res.json();
   }
+
+// Get daily forecast (7+ days)
+async function getForecast(lat, lon) {
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Forecast API error');
+  return res.json();
+}
   
 // helper: readable weathercode -> text (basic)
 function weatherCodeToText(code) {
@@ -123,6 +131,53 @@ function renderDoppler(el, lat, lon) {
   el.appendChild(wrapper);
 }
 
+// Render 7-day forecast into element
+async function renderForecast(el, lat, lon) {
+  try {
+    el.innerHTML = '<p class="loading">Fetching forecast…</p>';
+    const data = await getForecast(lat, lon);
+    const daily = data.daily || {};
+    const times = daily.time || [];
+    const tmax = daily.temperature_2m_max || [];
+    const tmin = daily.temperature_2m_min || [];
+    const codes = daily.weathercode || [];
+
+    // Build table
+    const table = document.createElement('table');
+    table.className = 'forecast-table';
+    const thead = document.createElement('thead');
+    thead.innerHTML = '<tr><th>Day</th><th></th><th>Min</th><th>Max</th></tr>';
+    table.appendChild(thead);
+    const tbody = document.createElement('tbody');
+
+    const days = Math.min(7, times.length);
+    for (let i = 0; i < days; i++) {
+      const row = document.createElement('tr');
+      const date = new Date(times[i]);
+      const dayLabel = date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+      const emoji = weatherCodeToEmoji(codes[i]);
+      const desc = weatherCodeToText(codes[i]);
+
+      const tdDay = document.createElement('td'); tdDay.textContent = dayLabel;
+      const tdEmoji = document.createElement('td'); tdEmoji.className = 'fw-emoji'; tdEmoji.textContent = emoji + ' ' + desc;
+      const tdMin = document.createElement('td'); tdMin.textContent = tmin[i] != null ? Math.round(tmin[i]) + '°' : '—';
+      const tdMax = document.createElement('td'); tdMax.textContent = tmax[i] != null ? Math.round(tmax[i]) + '°' : '—';
+
+      row.appendChild(tdDay);
+      row.appendChild(tdEmoji);
+      row.appendChild(tdMin);
+      row.appendChild(tdMax);
+      tbody.appendChild(row);
+    }
+
+    table.appendChild(tbody);
+    el.innerHTML = '';
+    el.appendChild(table);
+  } catch (err) {
+    el.innerHTML = `<p class="error">${err.message}</p>`;
+  }
+}
+
 // Try to get user geolocation; fallback to provided default
 function withLocation(defaultLat, defaultLon, cb) {
   if (navigator.geolocation) {
@@ -154,5 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
   withLocation(defaultLat, defaultLon, (lat, lon) => {
     renderWeather(weatherEl, lat, lon);
     renderDoppler(dopplerEl, lat, lon);
+    const forecastEl = document.getElementById('forecast');
+    if (forecastEl) renderForecast(forecastEl, lat, lon);
   });
 });

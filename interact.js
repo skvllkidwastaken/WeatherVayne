@@ -1,4 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
+	// Clear previously saved widget positions/sizes so layout resets on refresh
+	for (let i = localStorage.length - 1; i >= 0; i--) {
+		const key = localStorage.key(i);
+		if (!key) continue;
+		if (key.startsWith('widget-pos-') || key.startsWith('widget-size-')) {
+			localStorage.removeItem(key);
+		}
+	}
 	// Timezone dropdown for the time widget
 	const timeWidget = document.querySelector('.time-widget');
 	const timeEl = document.getElementById('time');

@@ -7,12 +7,17 @@
       "wdth" 100;
   }
 
+/* Use border-box sizing everywhere to keep sizing predictable */
+*, *::before, *::after { box-sizing: border-box; }
+
 body {
 
     background-image: url('blue-sky-clouds.png');
     background-repeat: no-repeat;
     background-size: cover;
     font-family: "Merriweather", serif;
+    max-height: 100vh; /* lock page to viewport height */
+    overflow: hidden;  /* prevent page from growing when widgets expand */
 }
 
 h1 {
@@ -33,6 +38,8 @@ h1 {
     margin: 24px auto;
     justify-content: center; /* center the two-column grid */
     align-items: start;
+    overflow: auto; /* allow inner scrolling if widgets exceed viewport */
+    max-height: calc(100vh - 140px); /* keep widgets area within viewport */
 }
 
 .widget {
@@ -46,6 +53,7 @@ h1 {
     transition: transform 0.12s ease;
     transform-origin: 0 0;
     position: relative; /* for resize handle positioning */
+    overflow: hidden; /* prevent widget from forcing page size; allow inner panes to scroll */
 }
 
 .widget h2 {
@@ -55,8 +63,8 @@ h1 {
 
 .Time, .Weather, .Doppler { min-height: 80px; }
 
-/* Make doppler map span both columns */
-.doppler-widget { grid-column: 1 / -1; }
+/* Make doppler and forecast widgets span both columns */
+.doppler-widget, .forecast-widget { grid-column: 1 / -1; }
 
 /* Center content inside time and weather widgets */
 .time-widget, .weather-widget { display:flex; flex-direction:column; align-items:center; justify-content:center; }
@@ -72,7 +80,7 @@ h1 {
 .weather-current .desc { opacity:0.9; }
 .weather-current .meta { font-size: 0.9rem; color: #ddd; }
 
-.doppler-frame iframe { width:100%; height:200px; border:0; border-radius:6px; }
+.doppler-frame iframe { width:100%; height:200px; border:0; border-radius:6px; max-height:40vh; }
 .doppler-frame a { display:inline-block; margin-top:8px; color:#aee; text-decoration:underline; }
 
 .loading { color: #ddd; }
@@ -104,6 +112,15 @@ h1 {
 
 /* Min/max visual hints */
 .widget { min-width: 180px; min-height: 80px; }
+
+/* Forecast table styling */
+.forecast-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+.forecast-table th, .forecast-table td { padding: 8px 6px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.forecast-table .fw-emoji { width: 40%; }
+.forecast-table tr:hover { background: rgba(255,255,255,0.03); }
+
+/* Constrain forecast widget height and scroll internally so page stays fixed */
+.Forecast { max-height: 280px; overflow: auto; }
 
 /* Text outline for better contrast on busy backgrounds */
 .text-outline,
